@@ -135,12 +135,13 @@ if(fp != NULL)
 	
 	FILE *fl = NULL;
 int ret = mkdir(folder, 0777);
+	printf("folder %s\n", folder);
+	
 	for(i=0;i<hdr->num_segments;i++){
 		uint8_t* name = (uint8_t*) malloc(10 + 3);
 if(ret == -1)
 	sprintf(name, "blob%lx.bin", i);
 else if(ret == 0)
-printf("folder %s\n", folder);
       sprintf(name, "/blobs/blob%lx.bin", i);
 
 		FILE *blob = fopen_with_path(name, wb);
