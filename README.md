@@ -1,5 +1,5 @@
 # BAR
-backup and restore decrypt and encrypt utility
+backup and restore decrypt (and encrypt?) utility
 
 ## Credits
 
