@@ -146,9 +146,9 @@ int main(int argc, char** argv){
 		AES_KEY ctx;
 		AES_set_decrypt_key(sbl_bar_cipher_key,0x80,&ctx);
 		AES_cbc_encrypt(buf3,buf3,seg->data_size_without_padding,&ctx,seg->cipher_seed,AES_DECRYPT);
-		printf("writing data offset %08X, data size without padding %08X\n",seg->data_offset,seg->data_size_without_padding);
+		//printf("writing data offset %08X, data size without padding %08X\n",seg->data_offset,seg->data_size_without_padding);
 		fwrite(buf3, seg->data_size_without_padding, 1,blob);
-		printf("write data offset %08X, data size without padding %08X done\n",seg->data_offset,seg->data_size_without_padding);
+		//printf("write data offset %08X, data size without padding %08X done\n",seg->data_offset,seg->data_size_without_padding);
 		free(buf3);
 		fclose(blob);
 		free(name);
