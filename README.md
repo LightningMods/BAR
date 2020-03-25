@@ -1,6 +1,18 @@
 # BAR
 backup and restore decrypt (and encrypt?) utility
 
+Set path via the define Archive_PATH
+
+# Dependencies 
+
+1. libssl-dev
+
+if on a Debian distro do 
+
+```
+sudo apt-get install libssl-dev
+```
+
 ## Credits
 
 RedEye32 (for the structs)
