@@ -142,7 +142,7 @@ int ret = mkdir(folder, 0777);
 if(ret == -1)
 	sprintf(name, "blob%lx.bin", i);
 else if(ret == 0)
-      sprintf(name, "/blobs/blob%lx.bin", i);
+      sprintf(name, "blobs/blob%lx.bin", i);
 
 		FILE *blob = fopen_with_path(name, wb);
 if (blob != NULL)
