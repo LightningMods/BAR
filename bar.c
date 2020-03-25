@@ -17,7 +17,7 @@ FILE *fopen_with_path(const char* path, int type)
 FILE *fp = NULL;
 
 	char buffer[1024];
-	sprintf(buffer, "%s/%s", Archive_PATH, path);
+	sprintf(buffer, "%s%s", Archive_PATH, path);
 		if(type == 1)
 			fp=fopen(buffer,"wb");
 		else if (type == 2)
@@ -122,7 +122,7 @@ char  folder[1024];
 
 int main(int argc, char** argv){
 FILE* fp = fopen_with_path("archive.dat", rb);
-	printf("trying to open %s/archive.dat\n", Archive_PATH);
+	printf("trying to open %sarchive.dat\n", Archive_PATH);
 sprintf(folder, "%s/blobs", Archive_PATH);
 if(fp != NULL)
 {
