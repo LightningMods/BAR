@@ -6,6 +6,25 @@
 #include <openssl/aes.h>
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
+#include <errno.h>
+
+#define Archive_PATH ""
+#define wb 1
+#define rb 2
+
+FILE *fopen_with_path(const char* path, int type)
+{
+FILE *fp = NULL;
+
+	char buffer[1024];
+	sprintf(buffer, "%s/%s", Archive_PATH, path);
+		if(type == 1)
+			fp=fopen(buffer,"wb");
+		else if (type == 2)
+			fp=fopen(buffer,"rb");
+
+		return fp;
+}
 
 typedef struct {
     uint8_t signature[0x20];
@@ -63,8 +82,8 @@ FILE* getArchive(uint64_t offset)
 
 	if(number == last_open)
 		return f_last_open;
-	else if (last_open != -1)
-		fclose(f_last_open);
+	else if(last_open  != -1)
+                     fclose(f_last_open);
 
 	if(number == 0)
 	{
@@ -77,10 +96,10 @@ FILE* getArchive(uint64_t offset)
 		sprintf(name, "archive%04d.dat", number);
 	}
 	fprintf(stderr, "reading %s\n", name);
-	f_last_open = fopen(name,"rb");
-	last_open = number;
-
+	f_last_open = fopen_with_path(name, rb);
+        last_open = number;
 	free(name);
+
 
 	return f_last_open;
 }
@@ -99,9 +118,14 @@ void hexDump(const void *data, size_t size) {
   }
   printf("\n");
 }
+char  folder[1024];
 
 int main(int argc, char** argv){
-	FILE *fp=fopen("archive.dat","rb");
+FILE* fp = fopen_with_path("archive.dat", rb);
+	printf("trying to open %s/archive.dat\n", Archive_PATH);
+sprintf(folder, "%s/blobs", Archive_PATH);
+if(fp != NULL)
+{
 	fseeko(fp,0,SEEK_SET);
 	unsigned char buf[48] = {0};
 	fread(buf,48,1,fp);
@@ -110,16 +134,26 @@ int main(int argc, char** argv){
 	uint64_t i=0;
 	
 	FILE *fl = NULL;
+int ret = mkdir(folder, 0777);
 	for(i=0;i<hdr->num_segments;i++){
 		uint8_t* name = (uint8_t*) malloc(10 + 3);
-		sprintf(name, "blob%lx.bin", i);
-		FILE *blob = fopen(name,"wb");
+if(ret == -1)
+	sprintf(name, "blob%lx.bin", i);
+else if(ret == 0)
+printf("folder %s\n", folder);
+      sprintf(name, "/blobs/blob%lx.bin", i);
+
+		FILE *blob = fopen_with_path(name, wb);
+if (blob != NULL)
+{
 		uint8_t buf2[64] = {0};
 		fseeko(fp,48+(64*i),SEEK_SET);
 		fread(buf2,64,1,fp);
 		caf_segment_table_t * seg = (caf_segment_table_t *) buf2;
 		
 		fl = getArchive(seg->data_offset);
+if (fl != NULL)
+{
 		fseeko(fl,seg->data_offset % MAX_SEG_SIZE,SEEK_SET);
 		
 		uint8_t *buf3 = (uint8_t*) malloc (seg->data_size_without_padding);
@@ -146,15 +180,34 @@ int main(int argc, char** argv){
 		AES_KEY ctx;
 		AES_set_decrypt_key(sbl_bar_cipher_key,0x80,&ctx);
 		AES_cbc_encrypt(buf3,buf3,seg->data_size_without_padding,&ctx,seg->cipher_seed,AES_DECRYPT);
-		//printf("writing data offset %08X, data size without padding %08X\n",seg->data_offset,seg->data_size_without_padding);
+		printf("writing data offset %08X, data size without padding %08X\n",seg->data_offset,seg->data_size_without_padding);
 		fwrite(buf3, seg->data_size_without_padding, 1,blob);
-		//printf("write data offset %08X, data size without padding %08X done\n",seg->data_offset,seg->data_size_without_padding);
+		printf("write data offset %08X, data size without padding %08X done\n",seg->data_offset,seg->data_size_without_padding);
 		free(buf3);
 		fclose(blob);
 		free(name);
-		
-	}
-	fclose(fl);
+}
+
+else
+{
+printf("fopen f1 error %s\n", strerror(errno));
+exit(0);
+}
+}
+else
+{
+printf("fopen BLOB error %s\n", strerror(errno));
+exit(0);
+}
+
+}
+fclose(fl);	
+}
+else
+{
+printf("fopen Archive error %s\n", strerror(errno));
+exit(0);
+}
 	
 	//let's skip this as well
 	//HEADER HASHER
@@ -175,7 +228,8 @@ int main(int argc, char** argv){
 		//printf("header_hash match\n");
 	}
 	*/
-	fclose(fp);
+
 	
 	return 0;
 }
+
